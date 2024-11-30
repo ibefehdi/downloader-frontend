@@ -14,7 +14,13 @@ import {
     Chip,
     Link,
     Stack,
-    IconButton
+    IconButton,
+    Grid,
+    Card,
+    CardContent,
+    CardHeader,
+    Divider,
+    Avatar
 } from '@mui/material';
 import {
     CloudDownload,
@@ -22,9 +28,11 @@ import {
     Description,
     Error as ErrorIcon,
     DarkMode,
-    LightMode
+    LightMode,
+    FileDownloadDone,
+    Downloading
 } from '@mui/icons-material';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
 import io from 'socket.io-client';
 
 const socket = io('http://localhost:3000', {
@@ -38,29 +46,22 @@ function Downloader() {
     const [fileName, setFileName] = useState('');
     const [downloads, setDownloads] = useState(new Map());
 
-    // Create theme based on dark mode state
     const theme = createTheme({
         palette: {
             mode: darkMode ? 'dark' : 'light',
             primary: {
-                main: darkMode ? '#90caf9' : '#2196f3',
+                main: darkMode ? '#BB86FC' : '#6200EE',
             },
             secondary: {
-                main: darkMode ? '#f48fb1' : '#f50057',
+                main: darkMode ? '#03DAC6' : '#03DAC6',
             },
             background: {
-                default: darkMode ? '#121212' : '#fff',
-                paper: darkMode ? '#1e1e1e' : '#fff',
+                default: darkMode ? '#121212' : '#F5F5F5',
+                paper: darkMode ? '#1E1E1E' : '#FFFFFF',
             },
         },
-        components: {
-            MuiPaper: {
-                styleOverrides: {
-                    root: {
-                        padding: '24px',
-                    },
-                },
-            },
+        typography: {
+            fontFamily: 'Roboto, sans-serif',
         },
     });
 
@@ -153,131 +154,166 @@ function Downloader() {
             <Box sx={{
                 minHeight: '100vh',
                 bgcolor: 'background.default',
-                transition: 'background-color 0.3s ease'
+                transition: 'background-color 0.3s ease',
+                background: darkMode
+                    ? 'linear-gradient(147deg, #000000 0%, #2c3e50 74%)'
+                    : 'linear-gradient(147deg, #FFE53B 0%, #FF2525 74%)',
             }}>
                 <Container maxWidth="md" sx={{ py: 4 }}>
-                    <Paper elevation={3} sx={{ mb: 4 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                            <Typography variant="h5" component="h1" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <CloudDownload />
-                                File Downloader
-                            </Typography>
-                            <IconButton onClick={() => setDarkMode(!darkMode)} color="primary">
-                                {darkMode ? <LightMode /> : <DarkMode />}
-                            </IconButton>
-                        </Box>
-
-                        <form onSubmit={handleSubmit}>
-                            <Stack spacing={3}>
-                                <TextField
-                                    fullWidth
-                                    value={url}
-                                    onChange={(e) => setUrl(e.target.value)}
-                                    placeholder="Enter URL or magnet link"
-                                    label="URL"
-                                    variant="outlined"
-                                    InputProps={{
-                                        startAdornment: <LinkIcon sx={{ mr: 1, color: 'action.active' }} />,
-                                    }}
-                                />
-
-                                <TextField
-                                    fullWidth
-                                    value={fileName}
-                                    onChange={(e) => setFileName(e.target.value)}
-                                    placeholder="Custom filename (optional)"
-                                    label="Filename"
-                                    variant="outlined"
-                                    InputProps={{
-                                        startAdornment: <Description sx={{ mr: 1, color: 'action.active' }} />,
-                                    }}
-                                />
-
-                                <FormControl fullWidth>
-                                    <InputLabel>Download Type</InputLabel>
-                                    <Select
-                                        value={type}
-                                        onChange={(e) => setType(e.target.value)}
-                                        label="Download Type"
-                                    >
-                                        <MenuItem value="direct">Direct Download</MenuItem>
-                                        <MenuItem value="torrent">Torrent</MenuItem>
-                                    </Select>
-                                </FormControl>
-
-                                <Button
-                                    type="submit"
-                                    variant="contained"
-                                    size="large"
-                                    startIcon={<CloudDownload />}
-                                >
-                                    Start Download
-                                </Button>
-                            </Stack>
-                        </form>
-                    </Paper>
+                    <Card elevation={4} sx={{ mb: 4 }}>
+                        <CardHeader
+                            avatar={
+                                <Avatar sx={{ bgcolor: 'primary.main' }}>
+                                    <CloudDownload />
+                                </Avatar>
+                            }
+                            action={
+                                <IconButton onClick={() => setDarkMode(!darkMode)} color="inherit">
+                                    {darkMode ? <LightMode /> : <DarkMode />}
+                                </IconButton>
+                            }
+                            title={
+                                <Typography variant="h5" component="h1" sx={{ fontWeight: 'bold' }}>
+                                    File Downloader
+                                </Typography>
+                            }
+                            subheader="Download files with ease and style"
+                        />
+                        <Divider />
+                        <CardContent>
+                            <form onSubmit={handleSubmit}>
+                                <Grid container spacing={2}>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            value={url}
+                                            onChange={(e) => setUrl(e.target.value)}
+                                            placeholder="Enter URL or magnet link"
+                                            label="URL"
+                                            variant="outlined"
+                                            InputProps={{
+                                                startAdornment: <LinkIcon sx={{ mr: 1, color: 'action.active' }} />,
+                                            }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12}>
+                                        <TextField
+                                            fullWidth
+                                            value={fileName}
+                                            onChange={(e) => setFileName(e.target.value)}
+                                            placeholder="Custom filename (optional)"
+                                            label="Filename"
+                                            variant="outlined"
+                                            InputProps={{
+                                                startAdornment: <Description sx={{ mr: 1, color: 'action.active' }} />,
+                                            }}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <FormControl fullWidth>
+                                            <InputLabel>Download Type</InputLabel>
+                                            <Select
+                                                value={type}
+                                                onChange={(e) => setType(e.target.value)}
+                                                label="Download Type"
+                                            >
+                                                <MenuItem value="direct">Direct Download</MenuItem>
+                                                <MenuItem value="torrent">Torrent</MenuItem>
+                                            </Select>
+                                        </FormControl>
+                                    </Grid>
+                                    <Grid item xs={12} sm={6}>
+                                        <Button
+                                            type="submit"
+                                            variant="contained"
+                                            size="large"
+                                            startIcon={<CloudDownload />}
+                                            fullWidth
+                                            sx={{ height: '100%' }}
+                                        >
+                                            Start Download
+                                        </Button>
+                                    </Grid>
+                                </Grid>
+                            </form>
+                        </CardContent>
+                    </Card>
 
                     <Stack spacing={2}>
                         {Array.from(downloads).map(([id, data]) => (
-                            <Paper key={id} elevation={2}>
-                                {data.error ? (
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'error.main' }}>
-                                        <ErrorIcon />
-                                        <Typography>{data.error}</Typography>
-                                    </Box>
-                                ) : (
-                                    <Stack spacing={2}>
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <Chip
-                                                label={data.status.charAt(0).toUpperCase() + data.status.slice(1)}
-                                                color={getStatusColor(data.status)}
-                                                size="small"
-                                            />
-                                            {data.speed > 0 && (
+                            <Card key={id} elevation={2}>
+                                <CardContent>
+                                    {data.error ? (
+                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'error.main' }}>
+                                            <ErrorIcon />
+                                            <Typography>{data.error}</Typography>
+                                        </Box>
+                                    ) : (
+                                        <Stack spacing={2}>
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <Chip
+                                                    label={data.status.charAt(0).toUpperCase() + data.status.slice(1)}
+                                                    color={getStatusColor(data.status)}
+                                                    size="small"
+                                                    icon={
+                                                        data.status === 'completed' ? <FileDownloadDone /> :
+                                                            data.status === 'downloading' ? <Downloading /> :
+                                                                data.status === 'error' ? <ErrorIcon /> :
+                                                                    null
+                                                    }
+                                                />
+                                                {data.speed > 0 && (
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {formatSpeed(data.speed)}
+                                                    </Typography>
+                                                )}
+                                            </Box>
+
+                                            <Box sx={{ width: '100%' }}>
+                                                <LinearProgress
+                                                    variant="determinate"
+                                                    value={data.progress}
+                                                    sx={{
+                                                        height: 8,
+                                                        borderRadius: 4,
+                                                        '& .MuiLinearProgress-bar': {
+                                                            backgroundImage: 'linear-gradient(to right, #6200EE, #03DAC6)'
+                                                        }
+                                                    }}
+                                                />
+                                            </Box>
+
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                                                 <Typography variant="body2" color="text.secondary">
-                                                    {formatSpeed(data.speed)}
+                                                    {data.progress.toFixed(1)}%
                                                 </Typography>
-                                            )}
-                                        </Box>
+                                                {data.downloaded > 0 && (
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {formatBytes(data.downloaded)} / {formatBytes(data.total)}
+                                                    </Typography>
+                                                )}
+                                            </Box>
 
-                                        <Box sx={{ width: '100%' }}>
-                                            <LinearProgress
-                                                variant="determinate"
-                                                value={data.progress}
-                                                sx={{ height: 8, borderRadius: 4 }}
-                                            />
-                                        </Box>
-
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                                            <Typography variant="body2" color="text.secondary">
-                                                {data.progress.toFixed(1)}%
-                                            </Typography>
-                                            {data.downloaded > 0 && (
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {formatBytes(data.downloaded)} / {formatBytes(data.total)}
-                                                </Typography>
-                                            )}
-                                        </Box>
-
-                                        {data.url && (
-                                            <Link
-                                                href={data.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                underline="none"
-                                            >
-                                                <Button
-                                                    variant="outlined"
-                                                    fullWidth
-                                                    startIcon={<CloudDownload />}
+                                            {data.url && (
+                                                <Link
+                                                    href={data.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    underline="none"
                                                 >
-                                                    Download Complete - Click to View File
-                                                </Button>
-                                            </Link>
-                                        )}
-                                    </Stack>
-                                )}
-                            </Paper>
+                                                    <Button
+                                                        variant="outlined"
+                                                        fullWidth
+                                                        startIcon={<CloudDownload />}
+                                                    >
+                                                        Download Complete - Click to View File
+                                                    </Button>
+                                                </Link>
+                                            )}
+                                        </Stack>
+                                    )}
+                                </CardContent>
+                            </Card>
                         ))}
                     </Stack>
                 </Container>
