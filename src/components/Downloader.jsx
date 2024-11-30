@@ -35,7 +35,7 @@ import {
 import { ThemeProvider, createTheme, styled } from '@mui/material/styles';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:3000', {
+const socket = io('http://212.28.178.186:3000', {
     withCredentials: true
 });
 
@@ -92,7 +92,7 @@ function Downloader() {
         e.preventDefault();
 
         try {
-            const response = await fetch('http://localhost:3000/api/download', {
+            const response = await fetch('http://212.28.178.186:3000/api/download', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
